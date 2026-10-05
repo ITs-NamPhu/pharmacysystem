@@ -9,7 +9,7 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
 
     ports:
-      - "127.0.0.1:1433:1433"
+      - "1433:1433"
 
     volumes:
       - sql_data:/var/opt/mssql
@@ -35,7 +35,9 @@ services:
       retries: 5
 
   api:
-    image: ${DOCKER_USERNAME}/pharmacysystem-api:latest
+    build:
+      context: ./backend
+      dockerfile: PharmacyManagement/Dockerfile
 
     container_name: pharmacy-api
 
@@ -48,21 +50,15 @@ services:
     ports:
       - "5000:8080"
 
-    restart: unless-stopped
-
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
       ConnectionStrings__PharSystemConnection: "Server=db,1433;Database=PharmacySystem;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
       RedisConnection: redis:6379
-      JwtConfig__SecretKey: ${JWT_SECRET_KEY}
-      EmailSettings__AppPassword: ${GMAIL_APP_PASSWORD}
-      Cors__Origins__0: "http://localhost:3000"
-      Cors__Origins__1: "http://localhost:5000"
-      Cors__Origins__2: "http://${EC2_HOST}:3000"
-      Cors__Origins__3: "http://${EC2_HOST}:5000"
 
   ai-agent:
-    image: ${DOCKER_USERNAME}/pharmacysystem-ai-agent:latest
+    build:
+      context: ./ai-agent
+      dockerfile: Dockerfile
 
     container_name: pharmacy-ai-agent
 
@@ -75,15 +71,12 @@ services:
     ports:
       - "8000:8000"
 
-    restart: unless-stopped
-
     env_file:
       - ./ai-agent/.env
     environment:
       BACKEND_URL: "http://api:8080"
       LANGFUSE_BASE_URL: "http://langfuse:3000"
       LANGFUSE_TRACING_ENVIRONMENT: "docker"
-      CORS_ORIGINS: '["http://localhost:3000","http://localhost:5000","http://${EC2_HOST}:3000","http://${EC2_HOST}:5000"]'
 
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
@@ -247,7 +240,9 @@ services:
       retries: 5
 
   react:
-    image: ${DOCKER_USERNAME}/pharmacysystem-react:latest
+    build:
+      context: ./frontend/pharmacymanage
+      dockerfile: Dockerfile
 
     container_name: pharmacy-react
 
@@ -257,11 +252,9 @@ services:
     ports:
       - "3000:3000"
 
-    restart: unless-stopped
-
     environment:
-      REACT_APP_API_URL: ${REACT_APP_API_URL}
-      REACT_APP_AI_URL: ${REACT_APP_AI_URL}
+      REACT_APP_API_URL: http://localhost:5000
+      REACT_APP_AI_URL: http://localhost:8000
       WDS_SOCKET_PORT: 0
 
 volumes:
