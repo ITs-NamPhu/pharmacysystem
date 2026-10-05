@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
   # Job 1: Test Backend (.NET 9)
@@ -90,9 +88,6 @@ jobs:
   build-push-ai-agent:
     needs: test-ai-agent
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -100,20 +95,21 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push AI agent image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./ai-agent
           file: ./ai-agent/Dockerfile
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}-ai-agent:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-ai-agent:latest
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-ai-agent:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -121,9 +117,6 @@ jobs:
   build-push-backend:
     needs: test-backend
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -131,20 +124,21 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push backend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/PharmacyManagement/Dockerfile
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}-api:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-api:latest
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -152,9 +146,6 @@ jobs:
   build-push-frontend:
     needs: test-frontend
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -162,19 +153,101 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Build and push frontend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend/pharmacymanage
           file: ./frontend/pharmacymanage/Dockerfile
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}-react:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-react:latest
+            ${{ secrets.DOCKER_USERNAME }}/pharmacysystem-react:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Job 7: Deploy to Amazon EC2
+  deploy-ec2:
+    name: Deploy to Amazon EC2
+    needs: [build-push-ai-agent, build-push-backend, build-push-frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Tạo file .env từ GitHub Secrets
+        run: |
+          {
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}"
+            echo "EC2_HOST=${{ secrets.EC2_HOST }}"
+            echo "MSSQL_SA_PASSWORD=${{ secrets.MSSQL_PASSWORD }}"
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
+            echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
+            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000"
+            echo "REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000"
+          } > .env
+
+      - name: Tạo file ai-agent/.env từ GitHub Secrets
+        run: |
+          mkdir -p ai-agent
+          {
+            echo "LLM_PROVIDER=groq"
+            echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}"
+            echo "GROQ_LLM_MODEL=openai/gpt-oss-20b"
+            echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}"
+            echo "OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}"
+            echo "LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}"
+            echo "LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}"
+            echo "LANGFUSE_TRACING_ENVIRONMENT=docker"
+            echo "TRENDS_ENABLED=true"
+            echo "DEFAULT_LOCATION=Ha Noi"
+          } > ai-agent/.env
+
+      - name: Copy docker-compose.yml và .env sang EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml,.env"
+          target: "/home/ec2-user/app"
+
+      - name: Copy ai-agent/.env sang EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "ai-agent/.env"
+          target: "/home/ec2-user/app/ai-agent"
+
+      - name: SSH vào EC2, Pull Image và Chạy lại Docker
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p /home/ec2-user/app/ai-agent
+            cd /home/ec2-user/app
+
+            # 1. Đăng nhập Docker Hub trên máy EC2
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.io \
+              -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+            # 2. Kéo image mới nhất vừa build về EC2
+            docker compose pull
+
+            # 3. Khởi động lại container (service không đổi sẽ không bị gián đoạn)
+            docker compose up -d --remove-orphans
+
+            # 4. Dọn image cũ không còn container nào dùng
+            docker image prune -f

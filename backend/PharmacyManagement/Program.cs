@@ -86,11 +86,14 @@ namespace PharmacyManagement
 
             builder.Services.Configure<JwtSetting>(builder.Configuration.GetSection("JwtConfig"));
 
+            var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                ?? new[] { "http://localhost:3000", "http://localhost:5000" };
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("ReactPolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000", "http://localhost:5000")
+                    policy.WithOrigins(corsOrigins)
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
