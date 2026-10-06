@@ -238,6 +238,10 @@ jobs:
             # 2. Kéo image mới nhất vừa build về EC2
             docker-compose pull
 
+            # chạy các docker nền trước
+            docker-compose up -d pharmacy-db pharmacy-redis langfuse-postgres langfuse-redis langfuse-clickhouse langfuse-minio
+            sleep 45
+            
             # 3. Khởi động lại container (service không đổi sẽ không bị gián đoạn)
             docker-compose up -d --remove-orphans
 
