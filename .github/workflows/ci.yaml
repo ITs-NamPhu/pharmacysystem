@@ -170,6 +170,9 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pharmacysystem-react:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000
+            REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000
 
   # Job 7: Deploy to Amazon EC2
   deploy-ec2:
@@ -190,8 +193,6 @@ jobs:
             echo "MSSQL_SA_PASSWORD=${{ secrets.MSSQL_PASSWORD }}"
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
             echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
-            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000"
-            echo "REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000"
           } > .env
 
       - name: Tạo file ai-agent/.env từ GitHub Secrets
@@ -210,23 +211,14 @@ jobs:
             echo "DEFAULT_LOCATION=Ha Noi"
           } > ai-agent/.env
 
-      - name: Copy docker-compose.yml và .env sang EC2
+      - name: Gộp copy toàn bộ cấu hình sang EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml,.env"
+          source: "docker-compose.yml,.env,ai-agent/.env"
           target: "/home/ec2-user/app"
-
-      - name: Copy ai-agent/.env sang EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "ai-agent/.env"
-          target: "/home/ec2-user/app/ai-agent"
 
       - name: SSH vào EC2, Pull Image và Chạy lại Docker
         uses: appleboy/ssh-action@v1.2.2
@@ -244,10 +236,10 @@ jobs:
               -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
             # 2. Kéo image mới nhất vừa build về EC2
-            docker compose pull
+            docker-compose pull
 
             # 3. Khởi động lại container (service không đổi sẽ không bị gián đoạn)
-            docker compose up -d --remove-orphans
+            docker-compose up -d --remove-orphans
 
             # 4. Dọn image cũ không còn container nào dùng
             docker image prune -f
