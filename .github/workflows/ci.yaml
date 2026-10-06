@@ -193,6 +193,8 @@ jobs:
             echo "MSSQL_SA_PASSWORD=${{ secrets.MSSQL_PASSWORD }}"
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
             echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
+            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000"
+            echo "REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000"
           } > .env
 
       - name: Tạo file ai-agent/.env từ GitHub Secrets
@@ -239,7 +241,7 @@ jobs:
             docker-compose pull
 
             # chạy các docker nền trước
-            docker-compose up -d pharmacy-db pharmacy-redis langfuse-postgres langfuse-redis langfuse-clickhouse langfuse-minio
+            docker-compose up -d db redis langfuse-postgres langfuse-redis langfuse-clickhouse langfuse-minio
             sleep 45
             
             # 3. Khởi động lại container (service không đổi sẽ không bị gián đoạn)
