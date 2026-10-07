@@ -25,8 +25,8 @@ services:
     image: redis:7-alpine
     container_name: pharmacy-redis
 
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"
 
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
@@ -45,8 +45,8 @@ services:
       redis:
         condition: service_healthy
 
-    ports:
-      - "5000:8080"
+    # ports:
+    #   - "5000:8080"
 
     restart: unless-stopped
 
@@ -72,8 +72,8 @@ services:
       langfuse:
         condition: service_healthy
 
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8000:8000"
 
     restart: unless-stopped
 
@@ -254,8 +254,8 @@ services:
     depends_on:
       - api
 
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "80:80"
 
     restart: unless-stopped
 
@@ -263,6 +263,21 @@ services:
       REACT_APP_API_URL: ${REACT_APP_API_URL}
       REACT_APP_AI_URL: ${REACT_APP_AI_URL}
       WDS_SOCKET_PORT: 0
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: pharmacy-nginx
+    ports:
+      - "80:80"
+      - "443:443" # cổng https
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/conf:/etc/letsencrypt # Map chứng chỉ SSL vào Nginx
+    depends_on:
+      - react
+      - api
+      - ai-agent
+    restart: unless-stopped
 
 volumes:
   sql_data:
