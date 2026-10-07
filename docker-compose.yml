@@ -271,7 +271,7 @@ services:
       - "80:80"
       - "443:443" # cổng https
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./certbot/conf:/etc/letsencrypt # Map chứng chỉ SSL vào Nginx
     depends_on:
       - react
