@@ -219,7 +219,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml,.env,ai-agent/.env"
+          source: "docker-compose.yml,.env,ai-agent/.env,nginx/"
           target: "/home/ec2-user/app"
 
       - name: SSH vào EC2, Pull Image và Chạy lại Docker
