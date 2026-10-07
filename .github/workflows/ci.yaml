@@ -170,10 +170,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pharmacysystem-react:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000
-            REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000
-
+          
   # Job 7: Deploy to Amazon EC2
   deploy-ec2:
     name: Deploy to Amazon EC2
@@ -219,7 +216,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml,.env,ai-agent/.env,nginx/"
+          source: "docker-compose.yml,.env,ai-agent/.env,nginx/nginx.conf"
           target: "/home/ec2-user/app"
 
       - name: SSH vào EC2, Pull Image và Chạy lại Docker
