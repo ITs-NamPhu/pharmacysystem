@@ -23,7 +23,8 @@ const refresh_token = async () => {
 
 
 const instance = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'https://localhost:7196'
+    baseURL: process.env.REACT_APP_API_URL
+    // || 'https://localhost:7196'
 })
 
 
