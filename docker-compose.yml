@@ -114,6 +114,7 @@ services:
       retries: 10
       start_period: 120s
     environment: &langfuse-env
+      HOSTNAME: "0.0.0.0"
       NEXTAUTH_URL: "http://localhost:3001"
       NEXTAUTH_SECRET: "change-me-super-secret"
       SALT: "change-me-salt"
