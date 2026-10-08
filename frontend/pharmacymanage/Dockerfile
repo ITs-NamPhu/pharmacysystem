@@ -9,8 +9,8 @@ RUN npm ci
 
 COPY . .
 
-ENV REACT_APP_API_URL=/api
-ENV REACT_APP_AI_URL=/ai
+ENV REACT_APP_API_URL=/
+ENV REACT_APP_AI_URL=/
 RUN npm run build
 
 # Stage 2: Serve bằng Nginx (Siêu nhẹ, siêu nhanh)
