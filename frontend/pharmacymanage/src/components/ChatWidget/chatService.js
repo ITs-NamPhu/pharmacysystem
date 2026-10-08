@@ -33,7 +33,7 @@ export const normalizeConversation = (c) => ({
 });
 
 export const sendMessage = async (message, token, branchId, conversationId, sessionId) => {
-    const response = await fetch(`${AI_AGENT_URL}/api/ai/chat`, {
+    const response = await fetch(`${AI_AGENT_URL}/ai/chat`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
