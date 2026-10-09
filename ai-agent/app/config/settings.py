@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # --- Langfuse tracing (tùy chọn: thiếu key thì tắt trace, không crash) ---
     LANGFUSE_PUBLIC_KEY: Optional[str] = None
     LANGFUSE_SECRET_KEY: Optional[str] = None
-    LANGFUSE_BASE_URL: str = "http://localhost:3001"
+    LANGFUSE_BASE_URL: Optional[str] = None 
     LANGFUSE_TRACING_ENVIRONMENT: Optional[str] = None
     LANGFUSE_RELEASE: Optional[str] = None
     LANGFUSE_SAMPLE_RATE: float = 1.0
