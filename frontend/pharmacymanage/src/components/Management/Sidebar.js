@@ -61,7 +61,7 @@ const Sidebar = (props) => {
                                     <rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
                                     <rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
                                 </svg>
-                                <span>Bảng điều khiển</span>
+                                <span onClick={() => navigate('/admin')}>Bảng điều khiển</span>
                             </a>
                             <a className="nav-item" href="#">
                                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none">
