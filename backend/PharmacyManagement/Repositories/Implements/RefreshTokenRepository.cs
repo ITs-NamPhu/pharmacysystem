@@ -29,7 +29,11 @@ namespace PharmacyManagement.Repositories.Implements
         {
             return await _context.RefreshToken
                 .Include(x => x.User)
-                .ThenInclude(x => x.UserBranch).ThenInclude(ub => ub.Role)
+                    .ThenInclude(x => x.UserBranch)
+                        .ThenInclude(ub => ub.Role)
+                .Include(x => x.User)
+                    .ThenInclude(x => x.UserBranch)
+                        .ThenInclude(ub => ub.Branch)
                 .FirstOrDefaultAsync(x =>
                     x.Token == hash &&
                     x.IsRevoked == false);
