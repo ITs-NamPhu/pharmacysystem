@@ -3,7 +3,7 @@ import nProgress from "nprogress";
 import { store } from '../redux/store';
 import { postRefreshToken } from "../services/apiService";
 import { doRefreshToken } from "../redux/action/userAction";
-import { computeIdempotencyKey, MUTATING_METHODS } from "./idempotency";
+import { MUTATING_METHODS, ListURL_Idempotency, newIdempotencyKey } from "./idempotency";
 
 
 
@@ -42,8 +42,13 @@ instance.interceptors.request.use(function (config) {
     }
 
     const method = (config.method || 'get').toLowerCase();
-    if (MUTATING_METHODS.includes(method) && !config.headers['Idempotency-Key']) {
-        config.headers['Idempotency-Key'] = computeIdempotencyKey(config);
+
+    // regex /^\// = "ký tự / ở đầu chuỗi bằng rỗng" (^ = đầu, \/ là dấu / viết escaped)
+    const url = (config.url || '').replace(/^\//, '');
+    const isListed = ListURL_Idempotency.some(prefix => url === prefix || url.startsWith(prefix + '/'));
+
+    if (MUTATING_METHODS.includes(method) && isListed && !config.headers['Idempotency-Key']) {
+        config.headers['Idempotency-Key'] = newIdempotencyKey();
     }
 
     nProgress.start();

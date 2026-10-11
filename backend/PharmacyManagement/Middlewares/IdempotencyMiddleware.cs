@@ -6,9 +6,10 @@ using StackExchange.Redis;
 namespace PharmacyManagement.Middlewares
 {
     /// <summary>
-    /// Middleware idempotency dùng Redis (fail-open, TTL 24 giờ).
-    /// Với các request mutation (POST/PUT/DELETE/PATCH) có header "Idempotency-Key":
-    ///  - SET NX để "claim" quyền xử lý đúng 1 lần (chặn double-submit đồng thời).
+    /// Middleware idempotency dùng Redis (TTL 24 giờ).
+    /// Với các request mutation (POST/PUT/DELETE/PATCH) - trừ endpoint miễn trừ:
+    ///  - Thiếu/rỗng header "Idempotency-Key" -> từ chối ngay 400 Bad Request.
+    ///  - Có key: SET NX để "claim" quyền xử lý đúng 1 lần (chặn double-submit đồng thời).
     ///  - Request đã xử lý thành công trước đó -> replay đúng response cũ.
     ///  - Request thất bại -> xóa key để cho phép retry.
     ///  - Khi Redis lỗi -> bỏ qua bảo vệ (fail-open), vẫn xử lý request bình thường.
@@ -17,6 +18,12 @@ namespace PharmacyManagement.Middlewares
     {
         private static readonly string[] MutatingMethods = { "POST", "PUT", "DELETE", "PATCH" };
         private static readonly TimeSpan IdempotencyTtl = TimeSpan.FromHours(24);
+
+        // Các endpoint đặc biệt không bắt buộc khóa (đăng nhập/refresh/logout, Hangfire dashboard).
+        private static readonly string[] ExemptPathPrefixes = { "/api/auth", "/hangfire" };
+
+        private static bool IsExempt(PathString path)
+            => ExemptPathPrefixes.Any(prefix => path.StartsWithSegments(prefix));
 
         private readonly RequestDelegate _next;
         private readonly ILogger<IdempotencyMiddleware> _logger;
@@ -30,11 +37,30 @@ namespace PharmacyManagement.Middlewares
         public async Task Invoke(HttpContext context, IDatabase redis)
         {
             var method = context.Request.Method.ToUpperInvariant();
-            if (!MutatingMethods.Contains(method)
-                || !context.Request.Headers.TryGetValue("Idempotency-Key", out var idemHeader)
-                || string.IsNullOrWhiteSpace(idemHeader.ToString()))
+
+            // 1. Không phải request thay đổi dữ liệu -> cho đi tiếp
+            if (!MutatingMethods.Contains(method))
             {
                 await _next(context);
+                return;
+            }
+
+            // 2. Endpoint đặc biệt được miễn khóa (đăng nhập/refresh/logout, Hangfire dashboard)
+            if (IsExempt(context.Request.Path))
+            {
+                await _next(context);
+                return;
+            }
+
+            // 3. Chặn ngay từ ngoài: thiếu hoặc rỗng Idempotency-Key -> 400 Bad Request
+            if (!context.Request.Headers.TryGetValue("Idempotency-Key", out var idemHeader)
+                || string.IsNullOrWhiteSpace(idemHeader.ToString()))
+            {
+                await WriteJsonResponseAsync(
+                    context,
+                    StatusCodes.Status400BadRequest,
+                    "IDEM001",
+                    "Missing Idempotency-Key header. An idempotency key is required for this request.");
                 return;
             }
 
