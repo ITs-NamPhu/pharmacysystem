@@ -17,7 +17,7 @@ namespace PharmacyManagement.Controllers
         }
 
         [AllowAnonymous] // cho phép truy cập không cần token
-        [EnableRateLimiting("Limit_Per_IP")]
+        // [EnableRateLimiting("Limit_Per_IP")]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
