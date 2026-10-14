@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 
 namespace PharmacyManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [EnableRateLimiting("Limit_Concurrent_Requests")]
+    [EnableRateLimiting(RateLimitPolicies.Dashboard)]
     [Authorize(Roles = "admin,manage_supply,manage_branch,user_sale,user_warehouse")]
     public class DashboardController : BaseController
     {

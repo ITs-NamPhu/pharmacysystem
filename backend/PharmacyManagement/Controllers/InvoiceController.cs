@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.Invoice;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -69,6 +71,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("GetAll")]
         [HasPermission("INVOICE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll([FromQuery] InvoiceFilterDto filter)
         {
             var branchId = GetBranchIdFromHeader();
@@ -78,6 +81,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("BatchesByMedicine")]
         [HasPermission("INVOICE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetBatchesByMedicine(long medicineID)
         {
             var branchId = GetBranchIdFromHeader();
@@ -87,6 +91,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("FefoBatches")]
         [HasPermission("INVOICE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetFefoBatches(long medicineID, decimal quantity)
         {
             var branchId = GetBranchIdFromHeader();
@@ -96,6 +101,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("UsersByBranch")]
         [HasPermission("INVOICE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetUsersByBranch()
         {
             var branchId = GetBranchIdFromHeader();

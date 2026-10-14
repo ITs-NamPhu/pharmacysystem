@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.GoodsReceipt;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -87,6 +89,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("GetAll")]
         [HasPermission("GOODSRECEIPT_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll([FromQuery] GoodsReceiptFilterDto filter)
         {
             var branchId = GetBranchIdFromHeader();

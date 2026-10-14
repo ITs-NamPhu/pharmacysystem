@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.AiSearch;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -7,6 +9,7 @@ namespace PharmacyManagement.Controllers
 {
     [Route("api/ai")]
     [ApiController]
+    [EnableRateLimiting(RateLimitPolicies.Expensive)]
     public class AiChatController : BaseController
     {
         private readonly IAiSearchService _service;

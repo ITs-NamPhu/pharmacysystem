@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.Customer;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -51,6 +53,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("GetAll")]
         [HasPermission("CUSTOMER_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll(int page, int count = 10)
         {
             var result = await _service.GetAllAsync(page, count);
@@ -59,6 +62,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("All")]
         [HasPermission("CUSTOMER_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAllCustomer()
         {
             var result = await _service.GetAllCustomerAsync();
@@ -67,6 +71,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("{id}/Wallet")]
         [HasPermission("CUSTOMER_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetWallet(long id)
         {
             var result = await _service.GetWalletAsync(id);

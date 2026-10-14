@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.Medicine;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -51,6 +53,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("GetAll")]
         [HasPermission("MEDICINE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll([FromQuery] MedicineFilterDto filter)
         {
             var branchId = GetBranchIdFromHeader();
@@ -60,6 +63,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("All")]
         [HasPermission("MEDICINE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAllMedicine()
         {
             var result = await _service.GetAllMedicineAsync();
