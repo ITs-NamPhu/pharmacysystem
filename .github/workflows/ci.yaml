@@ -205,7 +205,8 @@ jobs:
             echo "OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}"
             echo "LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}"
             echo "LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}"
-            echo "LANGFUSE_TRACING_ENVIRONMENT=docker"
+            echo "LANGFUSE_BASE_URL=https://cloud.langfuse.com"
+            echo "LANGFUSE_TRACING_ENVIRONMENT=production"
             echo "TRENDS_ENABLED=true"
             echo "DEFAULT_LOCATION=Ha Noi"
           } > ai-agent/.env
@@ -238,7 +239,7 @@ jobs:
             docker-compose pull
 
             # chạy các docker nền trước
-            docker-compose up -d db redis langfuse-postgres langfuse-redis langfuse-clickhouse langfuse-minio
+            docker-compose up -d db redis
             sleep 45
             
             # 3. Khởi động lại container (service không đổi sẽ không bị gián đoạn)

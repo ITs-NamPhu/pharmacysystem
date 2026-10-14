@@ -98,7 +98,7 @@ The project consists of:
        ▼             ▼                              ▼
 ┌─────────────┐  ┌───────────┐               ┌─────────────┐
 │ SQL Server  │  │   Redis   │               │  Langfuse   │
-│  ·  :1433   │  │  ·  :6379 │               │   ·  :3001  │
+│  ·  :1433   │  │  ·  :6379 │               │   Cloud     │
 │ 43 tables   │  │ cache +   │               │ tracing +   │
 │ FEFO stock  │  │ idempotency│              │ evaluation  │
 └─────────────┘  └───────────┘               └─────────────┘
@@ -118,7 +118,7 @@ The AI service never touches the database. It authenticates the user by forwardi
 
 ```
 .
-├── docker-compose.yml            # 12 services: app stack + Langfuse stack
+├── docker-compose.yml            # app stack; tracing via Langfuse Cloud
 ├── .github/workflows/ci.yaml     # CI/CD pipeline
 │
 ├── backend/                      # ASP.NET Core 9 Web API
@@ -278,13 +278,9 @@ Nothing else — the .NET SDK, Node and Python toolchains all live inside the im
    docker compose up --build
    ```
 
-   The first run takes a few minutes: SQL Server starts, EF Core migrations are applied automatically, the schema is seeded, and the Langfuse container initialises. Watch for `pharmacy-api` to log its listening address, then open the app.
+   The first run takes a few minutes: SQL Server starts, EF Core migrations are applied automatically, and the schema is seeded. Watch for `pharmacy-api` to log its listening address, then open the app.
 
-   To start only the application services and skip the Langfuse observability stack:
-
-   ```bash
-   docker compose up --build db redis api ai-agent react
-   ```
+   AI agent tracing is sent to Langfuse Cloud. Set `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` in `ai-agent/.env` (leave blank to disable tracing).
 
 4. **Verify**
 
@@ -352,7 +348,7 @@ Point `BACKEND_URL` at the local API (default `http://api:8080` in Docker,
 | Web application | http://localhost:3000 | React SPA |
 | Backend API | http://localhost:5000 | Maps to container port `8080` |
 | AI service | http://localhost:8000 | `/health`, `/api/ai/chat` |
-| Langfuse UI | http://localhost:3001 | Agent traces (seeded credentials required) |
+| Langfuse Cloud | https://cloud.langfuse.com | Agent traces (project API keys required) |
 | SQL Server | `localhost:1433` | Database `PharmacySystem` |
 | Redis | `localhost:6379` | Cache + idempotency |
 | Hangfire dashboard | http://localhost:5000/hangfire | Background job management |
