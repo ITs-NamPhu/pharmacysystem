@@ -41,7 +41,7 @@ The project consists of:
 
 ### 🛡 Reliability
 - **Idempotency middleware** — mutating requests carrying an `Idempotency-Key` header are de-duplicated via Redis, replaying the original response on retry instead of double-applying a write.
-- **Rate limiting** — a per-IP token bucket on authentication endpoints and a concurrency limiter on dashboard reads.
+- **Rate limiting** — tiered policies partitioned per user (falling back to per-IP for anonymous calls): a strict per-IP token bucket on login (10/min) and refresh (60/min), a sliding-window limiter on dashboard reads (120/min), a tighter token bucket for expensive reads and AI search (40 burst, 120/min), and baseline read/write buckets for everything else. Limits are configurable via the `RateLimiting` section in `appsettings.json`.
 
 
 ### 🤖 AI Layer

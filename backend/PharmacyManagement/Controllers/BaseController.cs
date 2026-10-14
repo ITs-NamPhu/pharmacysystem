@@ -72,7 +72,7 @@ namespace PharmacyManagement.Controllers
             return GetBranchIdFromHeader();
         }
 
-        protected IActionResult Success(object? data = null, string message = "Success",int encode = 0)
+        protected IActionResult Success(object? data = null, string message = "Success", int encode = 0)
         {
             return Ok(new ApiResponse<object>
             {
@@ -83,4 +83,6 @@ namespace PharmacyManagement.Controllers
             });
         }
     }
+
+
 }

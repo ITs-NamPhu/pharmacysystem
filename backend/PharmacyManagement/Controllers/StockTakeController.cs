@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.StockTake;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -89,6 +91,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet("GetAll")]
         [HasPermission("STOCKTAKE_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll(int page, int count = 10, long warehouseId = 0)
         {
             var result = await _service.GetAllAsync(page, count, warehouseId);

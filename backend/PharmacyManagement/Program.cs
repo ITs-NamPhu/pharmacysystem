@@ -28,8 +28,8 @@ using Microsoft.AspNetCore.Authorization;
 using Hangfire;
 
 using StackExchange.Redis;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using PharmacyManagement.Infrastructure.RateLimiting;
 
 namespace PharmacyManagement
 {
@@ -51,33 +51,24 @@ namespace PharmacyManagement
 
             // Multiplexer dùng cho IdempotencyMiddleware (SET NX ... ).
             // AbortOnConnectFail=false: không ném lỗi khi Redis chưa sẵn sàng, thử kết nối lại nền.
-            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-                ConnectionMultiplexer.Connect(redisConnection, opts => opts.AbortOnConnectFail = false));
+            var multiplexer = ConnectionMultiplexer.Connect(redisConnection, opts => opts.AbortOnConnectFail = false);
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(multiplexer);
             builder.Services.AddScoped(sp => sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
 
-            builder.Services.AddRateLimiter(rateLimit =>
+            // Rate limiting theo tầng (xem Infrastructure/RateLimiting). Cấu hình ở section "RateLimiting".
+            builder.Services.AddAppRateLimiting(builder.Configuration, multiplexer);
+
+            // Đọc IP/scheme thật của client khi chạy sau reverse proxy (nginx).
+            // API chỉ được expose qua nginx trong mạng Docker nên tin 1 hop proxy;
+            // nginx luôn ghi IP client thật ở cuối X-Forwarded-For.
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
-                rateLimit.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                rateLimit.AddPolicy("Limit_Per_IP", httpContext =>
-                {
-                    var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                    return RateLimitPartition.GetTokenBucketLimiter(ipAddress, _ => new TokenBucketRateLimiterOptions
-                    {
-                        TokenLimit = 10,
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                        QueueLimit = 5,
-                        ReplenishmentPeriod = TimeSpan.FromMinutes(1),
-                        TokensPerPeriod = 1
-                    });
-                });
-
-                rateLimit.AddConcurrencyLimiter("Limit_Concurrent_Requests", options =>
-                {
-                    options.PermitLimit = 5; // Số lượng request đồng thời tối đa
-                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    options.QueueLimit = 4; // Số lượng request chờ tối đa
-                });
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.ForwardLimit = 1;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
             });
 
             // Add services to the container.
@@ -319,6 +310,7 @@ namespace PharmacyManagement
             }
 
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseForwardedHeaders();
             if (!app.Environment.IsEnvironment("Docker"))
             {
                 app.UseHttpsRedirection();
@@ -328,6 +320,7 @@ namespace PharmacyManagement
             app.UseAuthentication();
             app.UseRateLimiter();
             app.UseMiddleware<IdempotencyMiddleware>();
+
             app.UseAuthorization();
 
             app.MapControllers();

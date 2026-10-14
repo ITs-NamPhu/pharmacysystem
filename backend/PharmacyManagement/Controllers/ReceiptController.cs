@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PharmacyManagement.DTOs.Receipt;
+using PharmacyManagement.Infrastructure.RateLimiting;
 using PharmacyManagement.Services.Interfaces;
 using PharmacyManagement.Validators.PermissionHandle;
 
@@ -52,6 +54,7 @@ namespace PharmacyManagement.Controllers
 
         [HttpGet]
         [HasPermission("RECEIPT_VIEW")]
+        [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll(long? customerId, int page = 1, int count = 10)
         {
             var result = await _service.GetAllAsync(customerId, page, count);
