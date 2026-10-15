@@ -242,10 +242,10 @@ async def mock_backend():
     orig_get, orig_post = backend_client.get, backend_client.post
 
     async def fake_get(path: str, params: dict = None, token: str = None, branch_id: str = None):
-        return _get_route((path or "").strip("/"), params or {})
+        return _get_route((path or "").strip("/").lower(), params or {})
 
     async def fake_post(path: str, json_body: dict = None, token: str = None, branch_id: str = None):
-        return _post_route((path or "").strip("/"), json_body or {})
+        return _post_route((path or "").strip("/").lower(), json_body or {})
 
     backend_client.get = fake_get
     backend_client.post = fake_post

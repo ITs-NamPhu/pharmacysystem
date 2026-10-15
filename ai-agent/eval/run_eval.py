@@ -174,9 +174,9 @@ async def run_all(args) -> pathlib.Path:
             rec = await run_case(case, args.provider, auth, judge=args.judge)
             results.append(rec)
             status = "ERR" if rec["error"] else f"F1={rec.get('tool_f1')}"
-            logger.info("[%d/%d] %s %s -> %s | %dms",
+            logger.info("[%d/%d] %s %s -> %s | %sms",
                         i, len(cases), rec["id"], rec["category"], status,
-                        rec["latency_ms"])
+                        rec["latency_ms"] or 0)
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     outdir = pathlib.Path(args.out) / f"{args.mode}_{args.provider}_{stamp}"
