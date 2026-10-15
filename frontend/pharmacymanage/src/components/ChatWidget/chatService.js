@@ -33,7 +33,7 @@ export const normalizeConversation = (c) => ({
 });
 
 export const sendMessage = async (message, token, branchId, conversationId, sessionId) => {
-    const response = await fetch(`${AI_AGENT_URL}/ai/chat`, {
+    const response = await fetch(`${AI_AGENT_URL}ai/chat`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export const sendMessage = async (message, token, branchId, conversationId, sess
 };
 
 export const clearChatHistory = async (token, sessionId = 'default') => {
-    const response = await fetch(`${AI_AGENT_URL}/ai/chat/clear?session_id=${sessionId}`, {
+    const response = await fetch(`${AI_AGENT_URL}ai/chat/clear?session_id=${sessionId}`, {
         method: 'POST',
         headers: {
             'Authorization': token,
