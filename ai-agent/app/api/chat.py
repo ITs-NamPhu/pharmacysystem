@@ -110,7 +110,7 @@ async def save_history_to_dotnet(conversation_id: int, user_message: str, ai_mes
         logger.error(f"Lỗi khi lưu lịch sử chat vào .NET: {str(e)}")
 
 
-@router.post("/chat")
+@router.post("ai/chat")
 async def chat(
     request: ChatRequest,
     auth: AuthContext = Depends(get_auth_context),
