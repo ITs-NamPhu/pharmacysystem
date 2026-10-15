@@ -190,8 +190,8 @@ jobs:
             echo "MSSQL_SA_PASSWORD=${{ secrets.MSSQL_PASSWORD }}"
             echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
             echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}"
-            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:5000"
-            echo "REACT_APP_AI_URL=http://${{ secrets.EC2_HOST }}:8000"
+            echo "REACT_APP_API_URL=https://${{ secrets.EC2_HOST }}"
+            echo "REACT_APP_AI_URL=https://${{ secrets.EC2_HOST }}"
           } > .env
 
       - name: Tạo file ai-agent/.env từ GitHub Secrets
