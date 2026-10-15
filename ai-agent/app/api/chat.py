@@ -19,7 +19,7 @@ from app.exceptions import TokenExpiredException
 from app.services.backend_client import backend_client
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="ai", tags=["AI Chat"])
+router = APIRouter(prefix="/ai", tags=["AI Chat"])
 
 
 def _normalize_token(token: str) -> str:
