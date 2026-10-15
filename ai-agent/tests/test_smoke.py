@@ -19,13 +19,13 @@ def test_health_endpoint():
 
 
 def test_chat_requires_authorization():
-    r = client.post("/api/ai/chat", json={"message": "xin chao"})
+    r = client.post("/ai/chat", json={"message": "xin chao"})
     assert r.status_code == 401
 
 
 def test_clear_requires_authorization():
     # /chat/clear cũng bắt buộc Authorization (get_auth_context)
-    r = client.post("/api/ai/chat/clear", params={"session_id": "x"})
+    r = client.post("/ai/chat/clear", params={"session_id": "x"})
     assert r.status_code == 401
 
 
@@ -60,7 +60,7 @@ def test_chat_new_conversation_streams_done(fake_agent):
         )
 
         r = client.post(
-            "/api/ai/chat",
+            "/ai/chat",
             json={"message": "xin chao"},
             headers={"Authorization": "Bearer test-token"},
         )
@@ -88,7 +88,7 @@ def test_chat_continuing_conversation_loads_history(fake_agent):
         )
 
         r = client.post(
-            "/api/ai/chat",
+            "/ai/chat",
             json={"message": "trả lời tiếp", "conversation_id": 5},
             headers={"Authorization": "Bearer test-token", "X-Branch-Id": "3"},
         )
@@ -103,7 +103,7 @@ def test_chat_backend_create_failure_still_answers(fake_agent):
             return_value=httpx.Response(500, text="boom")
         )
         r = client.post(
-            "/api/ai/chat",
+            "/ai/chat",
             json={"message": "xin chao"},
             headers={"Authorization": "Bearer test-token"},
         )
