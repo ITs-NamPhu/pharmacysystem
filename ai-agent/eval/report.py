@@ -93,8 +93,8 @@ def write_report(results: list, outdir: Path) -> dict:
         lines.append(f"**Q:** {r['question']}")
         lines.append(f"**Tool dùng:** {', '.join(r.get('called_tools') or []) or '(không gọi)'} "
                      f"(dự kiến: {', '.join(r.get('expected_tools') or []) or '(không cần)'})")
-        if r.get("tool_inputs"):
-            lines.append(f"**Tool inputs:** {r['tool_inputs']}")
+        if r.get("tool_calls"):
+            lines.append(f"**Tool calls:** {r['tool_calls']}")
         if r.get("error"):
             lines.append(f"**Lỗi:** {r['error']}")
         else:

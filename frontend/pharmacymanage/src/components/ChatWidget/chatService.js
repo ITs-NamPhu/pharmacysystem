@@ -55,7 +55,7 @@ export const sendMessage = async (message, token, branchId, conversationId, sess
 };
 
 export const clearChatHistory = async (token, sessionId = 'default') => {
-    const response = await fetch(`${AI_AGENT_URL}/api/ai/chat/clear?session_id=${sessionId}`, {
+    const response = await fetch(`${AI_AGENT_URL}/ai/chat/clear?session_id=${sessionId}`, {
         method: 'POST',
         headers: {
             'Authorization': token,

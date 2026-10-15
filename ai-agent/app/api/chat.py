@@ -19,7 +19,7 @@ from app.exceptions import TokenExpiredException
 from app.services.backend_client import backend_client
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/ai", tags=["AI Chat"])
+router = APIRouter(prefix="/ai", tags=["AI Chat"])
 
 
 def _normalize_token(token: str) -> str:
@@ -110,7 +110,7 @@ async def save_history_to_dotnet(conversation_id: int, user_message: str, ai_mes
         logger.error(f"Lỗi khi lưu lịch sử chat vào .NET: {str(e)}")
 
 
-@router.post("ai/chat")
+@router.post("/chat")
 async def chat(
     request: ChatRequest,
     auth: AuthContext = Depends(get_auth_context),
