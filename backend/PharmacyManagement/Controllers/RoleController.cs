@@ -49,7 +49,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Get role successfully.");
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         [HasPermission("ROLE_VIEW")]
         public async Task<IActionResult> GetAll(int page, int count = 10)
         {
@@ -57,7 +57,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Get roles successfully.");
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("All")]
         [HasPermission("Role_View")]
         public async Task<IActionResult> GetAllRole()
         {

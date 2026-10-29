@@ -2,7 +2,7 @@ import instance, { refreshInstance } from '../utils/axiosCustomize';
 
 // module api user
 const getUserbyBranch = (page, limitPage) => {
-    return instance.get(`api/User/AllUser`,
+    return instance.get(`api/User/GetAllActive`,
         {
             params: { page: page, count: limitPage }
         })
@@ -307,7 +307,7 @@ const GetUsersByBranch = () => {
 const getAllReceiptPag = (page, count, customerId) => {
     const params = { page: page, count: count };
     if (customerId) params.customerId = customerId;
-    return instance.get(`api/Receipt`, { params })
+    return instance.get(`api/Receipt/GetAll`, { params })
 }
 const GetReceiptById = (receiptID) => {
     return instance.get(`api/Receipt/${receiptID}`)

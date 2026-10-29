@@ -49,7 +49,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Update user successfully.");
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         [HasPermission("User_View")]
         public async Task<IActionResult> GetAllUser(int page, int count = 10)
         {
@@ -59,7 +59,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Get user successfully.");
         }
 
-        [HttpGet("AllUser")]
+        [HttpGet("GetAllActive")]
         [HasPermission("USER_VIEW")]
         public async Task<IActionResult> GetAllUserActive(int page, int count = 10)
         {

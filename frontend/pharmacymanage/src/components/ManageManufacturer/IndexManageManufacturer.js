@@ -30,7 +30,7 @@ const IndexManageManufacturer = (props) => {
         console.log("res_manu", res)
         if (res.ec === 0) {
             setListManufacturer(res.dt.manufacturers);
-            setPageCount(res.dt.TotalPage);
+            setPageCount(res.dt.totalPage);
         }
     }
 

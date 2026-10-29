@@ -52,7 +52,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Get receipt successfully.");
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         [HasPermission("RECEIPT_VIEW")]
         [EnableRateLimiting(RateLimitPolicies.Expensive)]
         public async Task<IActionResult> GetAll(long? customerId, int page = 1, int count = 10)
