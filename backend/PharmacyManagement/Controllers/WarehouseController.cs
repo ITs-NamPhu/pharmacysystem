@@ -54,7 +54,7 @@ namespace PharmacyManagement.Controllers
             return Success(result, "Get warehouse successfully.");
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         [HasPermission("WAREHOUSE_VIEW")]
         public async Task<IActionResult> GetAll(int page, int count = 10)
         {

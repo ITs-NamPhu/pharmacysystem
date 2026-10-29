@@ -72,7 +72,10 @@ namespace PharmacyManagement
             });
 
             // Add services to the container.
-            builder.Services.AddDbContext<PharmacySystemDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("PharSystemConnection")));
+            builder.Services.AddDbContextPool<PharmacySystemDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("PharSystemConnection")),
+                poolSize: 128
+            );
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.Configure<JwtSetting>(builder.Configuration.GetSection("JwtConfig"));
@@ -318,10 +321,10 @@ namespace PharmacyManagement
             app.UseCors("ReactPolicy");
 
             app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseRateLimiter();
             app.UseMiddleware<IdempotencyMiddleware>();
-
-            app.UseAuthorization();
 
             app.MapControllers();
 
